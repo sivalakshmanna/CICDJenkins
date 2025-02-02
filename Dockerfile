@@ -17,7 +17,7 @@ RUN dotnet publish -c Release -o /app/out
 WORKDIR /app/out
 
 # Expose the application port
-EXPOSE 5000
+EXPOSE 4000
 
 # Run the application
-ENTRYPOINT ["dotnet", "dotnetwebapp.dll"]
+ENTRYPOINT ["dotnet", "dotnetwebapp.dll", "--urls", "http://*:5000"]
