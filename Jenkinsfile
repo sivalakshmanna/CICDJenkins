@@ -1,8 +1,10 @@
 pipeline {
     agent any
-    parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Enter the branch to build')
-    }
+    choice(
+            name: 'BRANCH_NAME',
+            choices: ['master', 'dockerfile', 'coursefile','dotnetwebapp'],  // Add your branch names here
+            description: 'Select the branch to build'
+        )
     environment {
         DOCKER_IMAGE = "sivalakshmanna/docker"
         DOCKER_TAG = "latest"
