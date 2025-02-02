@@ -20,4 +20,4 @@ WORKDIR /app/out
 EXPOSE 5000
 
 # Run the application
-ENTRYPOINT ["dotnet", "dotnetwebapp.dll", "--urls", "http://*:4000"]
+ENTRYPOINT ["dotnet", "dotnetwebapp.dll", "--urls", "http://*:5000"]
