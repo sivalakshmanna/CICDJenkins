@@ -1,25 +1,23 @@
-# Use the .NET Core SDK image as the base image
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+# Use the .NET 6 SDK image (includes runtime and build tools)
+FROM mcr.microsoft.com/dotnet/sdk:6.0
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the project files to the container
-COPY *.csproj ./
+# Copy all project files to the container
+COPY . .
+
+# Restore dependencies
 RUN dotnet restore
 
-# Copy the rest of the application code to the container
-COPY . ./
+# Build and publish the application
+RUN dotnet publish -c Release -o /app/out
 
-# Build the application
-RUN dotnet publish -c Release -o out
+# Set the working directory to the published output folder
+WORKDIR /app/out
 
-# Create the final image using the .NET Core runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /app
-COPY --from=build-env /app/out .
-
+# Expose the application port
+EXPOSE 5000
 
 # Run the application
-#ENTRYPOINT ["dotnet", "dotnetwebapp.dll"]
 ENTRYPOINT ["dotnet", "dotnetwebapp.dll", "--urls", "http://*:5000"]
