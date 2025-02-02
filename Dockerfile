@@ -15,8 +15,8 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # Create the final image using the .NET Core runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /app
+#FROM mcr.microsoft.com/dotnet/aspnet:6.0
+#WORKDIR /app
 COPY --from=build-env /app/out .
 
 
