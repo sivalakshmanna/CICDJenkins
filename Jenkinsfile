@@ -3,7 +3,7 @@ pipeline {
     parameters {
         choice(
             name: 'BRANCH_NAME',
-            choices: ['main', 'develop', 'dotnetwebapp'],  // Add your branch names here
+            choices: ['dotnetwebapp', 'main', 'develop'],  // Add your branch names here
             description: 'Select the branch to build'
         )
     }
