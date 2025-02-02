@@ -72,5 +72,8 @@ pipeline {
                 sh "docker ps -a"
             }
         }
+        cleanup {
+            cleanWs() // Clean the workspace after the build is done
+        }
     }
 }
