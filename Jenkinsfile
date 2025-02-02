@@ -1,9 +1,9 @@
 pipeline {
     agent any
     parameters {
-    choice(
+        choice(
             name: 'BRANCH_NAME',
-            choices: ['master', 'dockerfile', 'coursefile','dotnetwebapp'],  // Add your branch names here
+            choices: ['main', 'develop', 'feature-branch'],  // Add your branch names here
             description: 'Select the branch to build'
         )
     }
