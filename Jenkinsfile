@@ -1,49 +1,69 @@
 pipeline {
-    agent { label 'master' }
-   
-	environment {
-		registry = "kss7/dotnetapp"
-		img = "$registry" + ":${env.BUILD_ID}"
-		registryCredential = 'docker-hub-login' 
-    }	
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "sivalakshmanna/docker"
+        DOCKER_TAG = "latest"
+        REGISTRY_CREDENTIALS = "dockerhub"  // Jenkins credential ID
+        CONTAINER_NAME = "my-app-container"
+       // APP_PORT = "8080"
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'dotnetwebapp', url: 'https://github.com/kss7/CICDJenkins.git'
-                sh 'ls -la'
+
+                git branch: 'dotnetwebapp', url: 'https://github.com/sivalakshmanna/CICDJenkins.git'
+                sh 'ls -la' //Replace with your repo URL
             }
         }
-		stage('Stop running Container') {
-			steps{
-					sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\')'
-					sh returnStatus: true, script: 'docker rmi $(docker images | grep ${registry} | awk \'{print $3}\') --force' 
-					sh returnStatus: true, script: 'docker rm ${JOB_NAME}'
-				}	
-		}
-        stage('Build') {
+
+        stage('Build Docker Image') {
             steps {
-				echo "Building our image"
-				script {
-					dockerImg = docker.build("${img}")
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
-		stage('Run') {
-			steps{
-				echo "Run image"
-				sh returnStdout: true, script: "docker run --rm -d --name ${JOB_NAME} -p 8081:5000 ${img}"
-			}
-		}
-		stage('Release') {
+
+        stage('Login to Docker Hub') {
             steps {
-				script {
-					echo "Push to docker hub"
-                    docker.withRegistry( 'https://registry.hub.docker.com ', registryCredential )  {
-							dockerImg.push()
-							dockerImg.push('latest') //one more push for latest tag
-						}
+                script {
+                    withCredentials([usernamePassword(credentialsId: REGISTRY_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    }
                 }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Stop and remove any existing container
+                    sh """
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                    """
+
+                    // Run the new container
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 8081:5000 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh "docker ps -a"
             }
         }
     }
